@@ -1,0 +1,7 @@
+{
+   "benmap_exe": "Path-to-patched-BenMAP.exe",
+   "cfg_file":"cfgfile.cfgx",
+   "pollutant":"pm",
+   "year":2030
+}
+
