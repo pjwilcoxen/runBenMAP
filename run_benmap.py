@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #  Jan 21 (PJW)
 #
 #  Build input control files for BenMAP and then run it in batch mode.
