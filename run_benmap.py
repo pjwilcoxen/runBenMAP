@@ -13,6 +13,24 @@ import datetime
 import fnmatch
 
 #
+#  Name of the setup file
+#
+
+setup_file = 'setup.json'
+
+#
+#  Default settings; can be overridden in the JSON input file
+#
+
+info = {
+    'aqg_dir' :'aqg',   # where to find AQG files
+    'cfg_dir' :'cfg',   # where to find the cfgx file
+    'cfgr_dir':'cfgr',  # where to put the cfgrx files
+    'apv_dir' :'apv',   # where to find the apvx file
+    'apvr_dir':'apvr',  # where to put the apvrx files
+    }
+
+#
 #  ----------------
 #  Define functions
 #  ----------------
@@ -138,15 +156,15 @@ def do_cfg(info):
     year = info['year']
     pol = info['pollutant'].lower()
 
-    suffix = f"{year}_{pol}"
+    suffix = f"_{year}_{pol}"
 
-    info['bau_data'] = f"bau_{suffix}"
+    info['bau_data'] = f"bau{suffix}"
 
     #
     #  Build a list of matching runs in the AQG directory
     #
 
-    aqg_files = get_basenames(info['aqg_dir'],f'*_{suffix}.aqgx')
+    aqg_files = get_basenames(info['aqg_dir'],f'*{suffix}.aqgx')
     cfg_files = get_basenames(info['cfgr_dir'],'*.cfgrx')
 
     todo = not_done(aqg_files,cfg_files)
@@ -154,7 +172,8 @@ def do_cfg(info):
     runs = [ f.replace(suffix,'') for f in todo ] 
 
     if 'bau' not in runs:
-        print("No BAU run found for {pol} in {year}")
+        print(f"No BAU run found for {pol} in {year}")
+        print(runs)
         sys.exit(0)
 
     #
@@ -164,7 +183,7 @@ def do_cfg(info):
     runs.remove('bau')
 
     for run in runs:
-        run_stem = f"{run}_{suffix}"
+        run_stem = f"{run}{suffix}"
         info['alt_data'] = run_stem
         run_benmap(info,run_stem)
 
@@ -310,18 +329,6 @@ if len(args) > 1 and args[1].lower() == '-n':
     dryrun = True
 
 #
-#  Default settings; can be overridden in the JSON input file
-#
-
-info = {
-    'aqg_dir' :'aqg',   # where to find AQG files
-    'cfg_dir' :'cfg',   # where to find the cfgx file
-    'cfgr_dir':'cfgr',  # where to put the cfgrx files
-    'apv_dir' :'apv',   # where to find the apvx file
-    'apvr_dir':'apvr',  # where to put the apvrx files
-    }
-
-#
 #  The work directory is where to put CTLX and log files
 #
 
@@ -338,14 +345,12 @@ info['work_dir'] = work_dirs[mode]
 #
 
 if mode == 'aqg':
-    info_file = 'run_aqg.json'
     info_req  = [
         'benmap_exe', # path to benmap
         'csv_dir'     # path to CMAQ CSV files
         ]
 
 if mode == 'cfg':
-    info_file = 'run_cfg.json'
     info_req  = [
         'benmap_exe',  # path to benmap
         'cfg_file',    # name of the cfgx file
@@ -354,7 +359,6 @@ if mode == 'cfg':
         ]
 
 if mode == 'apv':
-    info_file = 'run_apv.json'
     info_req  = [
         'benmap_exe', # path to benmap
         'apv_file'
@@ -364,7 +368,7 @@ if mode == 'apv':
 #  Read the JSON file and make sure it contains the required information
 #
 
-info_raw = json.load( open(info_file) )
+info_raw = json.load( open(setup_file) )
 
 for k,v in info_raw.items():
     info[k.lower()] = v
