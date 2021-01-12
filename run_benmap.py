@@ -151,7 +151,7 @@ def do_cfg(info):
 
     todo = not_done(aqg_files,cfg_files)
 
-    runs = [ f.split("_")[0] for f in todo ] 
+    runs = [ f.replace(suffix,'') for f in todo ] 
 
     if 'bau' not in runs:
         print("No BAU run found for {pol} in {year}")
@@ -300,7 +300,7 @@ GENERATE REPORT APVR
 
 args = sys.argv[1:]
 if len(args) < 1 or args[0].lower() not in ['aqg','cfg','apv']:
-    print("Usage: run_benmap.py data|cfg|apv [-n]")
+    print("Usage: run_benmap.py aqg|cfg|apv [-n]")
     sys.exit()
 
 mode = args[0].lower()
