@@ -212,10 +212,18 @@ def do_cfg(info):
 
 def do_apv(info):
 
+    # 
+    #  Filter files if pollutant was specified
+    #
+
+    pol = ''
+    if 'pollutant' in info:
+        pol = '_'+info['pollutant'].lower()
+
     template = get_template('apv')
 
-    cfgr_files = get_basenames(info['cfgr_dir'],'*.cfgrx')
-    apvr_files = get_basenames(info['apvr_dir'],'*.apvrx')
+    cfgr_files = get_basenames(info['cfgr_dir'],f"*{pol}.cfgrx")
+    apvr_files = get_basenames(info['apvr_dir'],f"*{pol}.apvrx")
 
     todo = not_done(cfgr_files,apvr_files)
 
@@ -349,7 +357,7 @@ GENERATE REPORT APVR
 
 args = sys.argv[1:]
 
-if len(args) < 1 or len(args) > 2:
+if len(args) < 1 or len(args) > 3:
     sys.exit(usage)
 
 mode = args.pop(0).lower()
