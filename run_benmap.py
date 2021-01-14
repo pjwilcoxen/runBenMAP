@@ -13,21 +13,29 @@ import datetime
 import fnmatch
 
 #
-#  Name of the setup file
+#  Usage
 #
 
-setup_file = 'setup.json'
+usage = "Usage: run_benmap.py aqg|cfg|apv [-n] [filename]"
 
 #
-#  Default settings; can be overridden in the JSON input file
+#  Set up some defaults
 #
+
+input_file = 'setup.json'
+
+dryrun = False
 
 info = {
-    'aqg_dir' :'aqg',   # where to find AQG files
-    'cfg_dir' :'cfg',   # where to find the cfgx file
-    'cfgr_dir':'cfgr',  # where to put the cfgrx files
-    'apv_dir' :'apv',   # where to find the apvx file
-    'apvr_dir':'apvr',  # where to put the apvrx files
+    'aqg_dir'    :'aqg',   # where to find AQG files
+    'cfg_dir'    :'cfg',   # where to find the cfgx file
+    'cfgr_dir'   :'cfgr',  # where to put the cfgrx files
+    'apv_dir'    :'apv',   # where to find the apvx file
+    'apvr_dir'   :'apvr',  # where to put the apvrx files
+    'inc_custom' :[],      # incidence reports, custom fields (optional)
+    'inc_results':[],      # incidence reports, results fields (optional)
+    'val_custom' :[],      # valuation reports, custom fields (optional)
+    'val_results':[],      # valuation reports, results fields (optional)
     }
 
 #
@@ -202,6 +210,15 @@ def do_apv(info):
 
     todo = not_done(cfgr_files,apvr_files)
 
+    for opt in ['inc_custom','inc_results','val_custom','val_results']:
+        val = info[opt]
+        if isinstance(val,list):
+            if len(val) > 0:
+                val = ','.join(val)
+            else:
+                val = ''
+        info[f"{opt}_str"] = val
+
     for f in todo:
         info['alt_data'] = f
         run_benmap(info,f)
@@ -295,12 +312,16 @@ GENERATE REPORT APVR
 -InputFile  $apvr_dir/$alt_data.apvrx
 -ReportFile $apvr_dir/$alt_data-incidence.csv
 -ResultType PooledIncidence
+-CustomFields $inc_custom_str
+-ResultFields $inc_results_str
 
 GENERATE REPORT APVR
 
 -InputFile  $apvr_dir/$alt_data.apvrx
 -ReportFile $apvr_dir/$alt_data-valuation.csv
 -ResultType PooledValuation
+-CustomFields $val_custom_str
+-ResultFields $val_results_str
 
 """)
 
@@ -318,15 +339,20 @@ GENERATE REPORT APVR
 #
 
 args = sys.argv[1:]
-if len(args) < 1 or args[0].lower() not in ['aqg','cfg','apv']:
-    print("Usage: run_benmap.py aqg|cfg|apv [-n]")
-    sys.exit()
 
-mode = args[0].lower()
+if len(args) < 1 or len(args) > 2:
+    sys.exit(usage)
 
-dryrun = False
-if len(args) > 1 and args[1].lower() == '-n':
+mode = args.pop(0).lower()
+if mode not in ['aqg','cfg','apv']:
+    sys.exit(usage)
+
+if len(args)>0 and args[0].lower() == '-n':
     dryrun = True
+    args.pop(0)
+
+if len(args)>0:
+    input_file = args[0]
 
 #
 #  The work directory is where to put CTLX and log files
@@ -368,7 +394,7 @@ if mode == 'apv':
 #  Read the JSON file and make sure it contains the required information
 #
 
-info_raw = json.load( open(setup_file) )
+info_raw = json.load( open(input_file) )
 
 for k,v in info_raw.items():
     info[k.lower()] = v
