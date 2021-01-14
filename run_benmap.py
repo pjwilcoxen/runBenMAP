@@ -88,7 +88,8 @@ def run_benmap(info,ctlx_stem):
 #
 
 def get_basenames(dir,pat):
-    names = [f.lower() for f in os.listdir(dir) if fnmatch.fnmatch(f,pat)]
+    lpat = pat.lower()
+    names = [f.lower() for f in os.listdir(dir) if fnmatch.fnmatch(f.lower(),lpat)]
     return [os.path.splitext(f)[0] for f in names]
     
 #
@@ -108,6 +109,14 @@ def not_done(inp,out):
 
 def do_aqg(info):
 
+    # 
+    #  Filter files if pollutant was specified
+    #
+
+    pol = ''
+    if 'pollutant' in info:
+        pol = '_'+info['pollutant'].lower()
+
     #
     #  Pollutants known to BenMAP
     #
@@ -122,8 +131,8 @@ def do_aqg(info):
     #  files. Won't rebuild files if they already exist.
     #
 
-    csv_files = get_basenames(info['csv_dir'],'*.csv')
-    aqg_files = get_basenames(info['aqg_dir'],'*.aqgx')
+    csv_files = get_basenames(info['csv_dir'],f"*{pol}.csv")
+    aqg_files = get_basenames(info['aqg_dir'],f"*{pol}.aqgx")
 
     todo = not_done(csv_files,aqg_files)
 
